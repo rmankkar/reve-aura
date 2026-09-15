@@ -22,10 +22,7 @@ function App() {
   const [adoProjectsLoading, setAdoProjectsLoading] = useState(false);
   const [adoIterationsLoading, setAdoIterationsLoading] = useState(false); // Renamed from adoSprintsLoading
   const [adoUserStoriesLoading, setAdoUserStoriesLoading] = useState(false);
-  // Team state kept for future use (commented out loading code)
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [teams, setTeams] = useState([]);
-  const [adoTeamsLoading, setAdoTeamsLoading] = useState(false);
+  // Team state removed as per hardcoded team configuration
 
   // Load projects when ADO UI is activated
   useEffect(() => {
@@ -39,11 +36,6 @@ function App() {
     setStory(newStory);
     setError(''); // Clear error on new input
     analyzeStory(newStory); // Generate clarifying questions based on vague words
-
-    // Also update AI suggestions if a role is already selected
-    if (selectedRole) {
-      generateAISuggestions();
-    }
   };
 
   const analyzeStory = (storyText) => {
@@ -67,8 +59,18 @@ function App() {
   };
 
   const generateAISuggestions = async () => {
+    // Determine which story to use based on current mode
+    let currentStory = '';
+    if (useAdoUi && selectedUserStory) {
+      // In ADO mode, use the selected user story's acceptance criteria
+      currentStory = selectedUserStory.acceptanceCriteria || '';
+    } else {
+      // In manual mode, use the manual story
+      currentStory = story;
+    }
+
     // Only generate suggestions if we have a story and a selected role
-    if (!story.trim() || !selectedRole) {
+    if (!currentStory.trim() || !selectedRole) {
       setAISuggestions([]);
       return;
     }
@@ -77,17 +79,17 @@ function App() {
     setError('');
     try {
       // Prepare the story to send - enhance for question generation based on role
-      let enhancedStory = story;
+      let enhancedStory = currentStory;
 
       if (selectedRole === 'QA') {
         // For QA role, add a marker that the backend can detect to generate clarification questions
-        enhancedStory = `QA_QUESTIONS_REQUEST:${story}`;
+        enhancedStory = `QA_QUESTIONS_REQUEST:${currentStory}`;
       } else if (selectedRole === 'BA') {
         // For BA role, add a marker to generate business-focused questions
-        enhancedStory = `BA_QUESTIONS_REQUEST:${story}`;
+        enhancedStory = `BA_QUESTIONS_REQUEST:${currentStory}`;
       } else if (selectedRole === 'DEV') {
         // For DEV role, add a marker to generate technical-focused questions
-        enhancedStory = `DEV_QUESTIONS_REQUEST:${story}`;
+        enhancedStory = `DEV_QUESTIONS_REQUEST:${currentStory}`;
       }
 
       const response = await fetch('/api/ai', {
@@ -286,22 +288,25 @@ function App() {
     setSelectedUserStory(story);
   };
 
-  const handleTeamChange = (event) => {
-    const teamId = event.target.value;
-    setSelectedTeam(teamId ? JSON.parse(teamId) : null);
-    // Note: We are not loading sprints based on team anymore because we use iteration path
-    // If we want to go back to team-based sprints, we would uncomment the team loading and sprint loading
-  };
+  // const handleTeamChange = (event) => {
+  //   const teamId = event.target.value;
+  //   setSelectedTeam(teamId ? JSON.parse(teamId) : null);
+  //   // Note: We are not loading sprints based on team anymore because we use iteration path
+  //   // If we want to go back to team-based sprints, we would uncomment the team loading and sprint loading
+  // };
 
   const handleToggleAdoUi = () => {
     setUseAdoUi(!useAdoUi);
-    // Reset ADO state when toggling
+    // Reset AI suggestions and loading when toggling modes
+    setAISuggestions([]);
+    setLoading(false);
+    // Reset ADO state when toggling to manual (i.e., when leaving ADO mode)
     if (!useAdoUi) {
       setSelectedProject(null);
       setSelectedIteration(null);
       setIterations([]);
-      setTeams([]);
-      setAdoTeamsLoading(false);
+      // setTeams([]);
+      // setAdoTeamsLoading(false);
       setUserStories([]);
       setSelectedUserStory(null);
       setAdoError('');
@@ -311,7 +316,7 @@ function App() {
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     // Generate AI suggestions when a role is selected
-    generateAISuggestions();
+    // generateAISuggestions();
   };
 
   return (
@@ -507,7 +512,7 @@ function App() {
               )}
             </div>
 
-            
+
 
             {/* Role Selection Buttons */}
             <div className="role-selection">
@@ -542,10 +547,11 @@ function App() {
               )}
             </div>
 
-            <div className="ado-actions">
+            {/* Action Buttons Container */}
+            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
               <button
                 onClick={handleRefineUserStoryWithAI}
-                className="clear-button"
+                className="refine-button"
                 disabled={
                   !selectedUserStory ||
                   !selectedRole ||
@@ -557,6 +563,15 @@ function App() {
                 {adoUserStoriesLoading || adoIterationsLoading || adoProjectsLoading
                   ? 'Processing...'
                   : 'Refine User Story with AI'}
+              </button>
+
+              <button
+                onClick={handleClearStory}
+                className="clear-button"
+                disabled={loading || !selectedUserStory}
+                style={{ marginLeft: '1rem' }}
+              >
+                {loading ? 'Processing...' : 'Clear Selection'}
               </button>
             </div>
 
@@ -586,14 +601,6 @@ function App() {
                 )}
               </section>
             )}
-
-            <button
-              onClick={handleClearStory}
-              className="clear-button"
-              disabled={loading || !selectedUserStory}
-            >
-              {loading ? 'Processing...' : 'Clear Selection'}
-            </button>
           </div>
         ) : (
           // Existing Textbox UI
@@ -670,6 +677,28 @@ function App() {
                   )}
                 </div>
 
+                {/* Action Buttons Container */}
+                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                  {/* Refine with AI Button */}
+                  <button
+                    onClick={generateAISuggestions}
+                    className="refine-button"
+                    disabled={!selectedRole || loading}
+                  >
+                    {loading ? 'Getting AI suggestions...' : 'Refine user story with AI'}
+                  </button>
+
+                  {/* Clear Story Button */}
+                  <button
+                    onClick={handleClearStory}
+                    className="clear-button"
+                    disabled={loading}
+                    style={{ marginLeft: '1rem' }}
+                  >
+                    Clear Story
+                  </button>
+                </div>
+
                 {(aiSuggestions.length > 0 || loading) && (
                   <section className="suggestions-section">
                     <h2 className="section-title">
@@ -688,14 +717,6 @@ function App() {
                     )}
                   </section>
                 )}
-
-                <button
-                  onClick={handleClearStory}
-                  className="clear-button"
-                  disabled={loading}
-                >
-                  {loading ? 'Processing...' : 'Clear Story'}
-                </button>
               </>
             ) : (
               <>
@@ -704,13 +725,15 @@ function App() {
                     Great! No vague words detected in your story.
                   </div>
                 )}
-                <button
-                  onClick={handleClearStory}
-                  className="clear-button"
-                  disabled={story.trim() === '' || loading}
-                >
-                  Clear Story
-                </button>
+                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                  <button
+                    onClick={handleClearStory}
+                    className="clear-button"
+                    disabled={story.trim() === '' || loading}
+                  >
+                    Clear Story
+                  </button>
+                </div>
               </>
             )}
           </>

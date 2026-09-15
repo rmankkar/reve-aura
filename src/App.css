@@ -168,7 +168,7 @@ body {
 .App-subtitle {
   font-size: 1.35rem;
   color: var(--text-secondary);
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   line-height: 1.6;
   position: relative;
@@ -618,6 +618,7 @@ body {
 .clear-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   padding: 0.875rem 1.75rem;
   background: var(--gradient-error);
@@ -1121,6 +1122,81 @@ body {
   justify-content: center;
   gap: 1.5rem;
   margin-bottom: 0.5rem;
+}
+
+/* Button Styles */
+.refine-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.refine-button:hover {
+  background: var(--gradient-primary);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(0, 191, 255, 0.4), var(--shadow);
+}
+
+.refine-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.refine-button svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.clear-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background: var(--gradient-error);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.clear-button:hover {
+  background: var(--gradient-error);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(255, 71, 87, 0.4), var(--shadow);
+}
+
+.clear-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.clear-button svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .logomark {
