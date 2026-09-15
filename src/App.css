@@ -1113,3 +1113,153 @@ body {
     font-size: 0.85rem;
   }
 }
+
+/* Enhanced Logo/Header Styles */
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.logomark {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.prism {
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation: prismPulse 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.prism::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(30deg);
+  animation: prismShine 4s linear infinite;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.App-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.App-title .logo-part {
+  display: inline-block;
+}
+
+.App-title .logo-part.Reve {
+  font-weight: 900;
+}
+
+.App-title .logo-part.aura {
+  font-style: italic;
+  font-weight: 700;
+  margin-left: -0.1em; /* Adjust kerning */
+}
+
+@keyframes prismPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes prismShine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(30deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(30deg);
+  }
+}
+
+/* Hover effects for interactivity */
+.logo-container:hover .prism {
+  animation: prismPulseHover 1.5s ease-in-out;
+}
+
+@keyframes prismPulseHover {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo-container {
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .logomark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .App-title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .logomark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .App-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .App-title .logo-part.aura {
+    margin-left: 0;
+  }
+}
