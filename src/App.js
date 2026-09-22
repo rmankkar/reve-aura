@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import DOMPurify from 'dompurify';
 
 function App() {
   const [story, setStory] = useState('');
@@ -7,22 +8,25 @@ function App() {
   const [aiSuggestions, setAISuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [selectedRole, setSelectedRole] = useState(null); // null, 'BA', 'DEV', or 'QA'
-  const [useAdoUi, setUseAdoUi] = useState(false); // Toggle for ADO UI
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [useAdoUi, setUseAdoUi] = useState(false);
+
+  const [showACModal, setShowACModal] = useState(false);
+  const [modalContent, setModalContent] = useState('');
+
   const vagueWords = ['fast', 'should', 'easy', 'simple', 'etc.', 'quickly'];
 
   // ADO UI state
   const [projects, setProjects] = useState([]);
-  const [iterations, setIterations] = useState([]); // Renamed from sprints to iterations
+  const [iterations, setIterations] = useState([]);
   const [userStories, setUserStories] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedIteration, setSelectedIteration] = useState(null); // Renamed from selectedSprint
+  const [selectedIteration, setSelectedIteration] = useState(null);
   const [selectedUserStory, setSelectedUserStory] = useState(null);
   const [adoError, setAdoError] = useState('');
   const [adoProjectsLoading, setAdoProjectsLoading] = useState(false);
-  const [adoIterationsLoading, setAdoIterationsLoading] = useState(false); // Renamed from adoSprintsLoading
+  const [adoIterationsLoading, setAdoIterationsLoading] = useState(false);
   const [adoUserStoriesLoading, setAdoUserStoriesLoading] = useState(false);
-  // Team state removed as per hardcoded team configuration
 
   // Load projects when ADO UI is activated
   useEffect(() => {
@@ -34,42 +38,41 @@ function App() {
   const handleStoryChange = (event) => {
     const newStory = event.target.value;
     setStory(newStory);
-    setError(''); // Clear error on new input
-    analyzeStory(newStory); // Generate clarifying questions based on vague words
+    setError('');
+    analyzeStory(newStory);
   };
 
   const analyzeStory = (storyText) => {
-    const foundWords = vagueWords.filter(word =>
-      storyText.toLowerCase().includes(` ${word} `) ||
-      storyText.toLowerCase().startsWith(`${word} `) ||
-      storyText.toLowerCase().endsWith(` ${word}`) ||
-      storyText.toLowerCase() === word
+    const foundWords = vagueWords.filter(
+      (word) =>
+        storyText.toLowerCase().includes(` ${word} `) ||
+        storyText.toLowerCase().startsWith(`${word} `) ||
+        storyText.toLowerCase().endsWith(` ${word}`) ||
+        storyText.toLowerCase() === word
     );
 
     if (foundWords.length > 0) {
       setClarifyingQuestions(
-        foundWords.map(word =>
-          `Could you please provide more details about how "${word}" relates to the task?`
+        foundWords.map(
+          (word) =>
+            `Could you please provide more details about how "${word}" relates to the task?`
         )
       );
     } else {
       setClarifyingQuestions([]);
-      setAISuggestions([]); // Clear AI suggestions when no vague words
+      setAISuggestions([]);
     }
   };
 
   const generateAISuggestions = async () => {
-    // Determine which story to use based on current mode
     let currentStory = '';
+
     if (useAdoUi && selectedUserStory) {
-      // In ADO mode, use the selected user story's acceptance criteria
       currentStory = selectedUserStory.acceptanceCriteria || '';
     } else {
-      // In manual mode, use the manual story
       currentStory = story;
     }
 
-    // Only generate suggestions if we have a story and a selected role
     if (!currentStory.trim() || !selectedRole) {
       setAISuggestions([]);
       return;
@@ -77,18 +80,15 @@ function App() {
 
     setLoading(true);
     setError('');
+
     try {
-      // Prepare the story to send - enhance for question generation based on role
       let enhancedStory = currentStory;
 
       if (selectedRole === 'QA') {
-        // For QA role, add a marker that the backend can detect to generate clarification questions
         enhancedStory = `QA_QUESTIONS_REQUEST:${currentStory}`;
       } else if (selectedRole === 'BA') {
-        // For BA role, add a marker to generate business-focused questions
         enhancedStory = `BA_QUESTIONS_REQUEST:${currentStory}`;
       } else if (selectedRole === 'DEV') {
-        // For DEV role, add a marker to generate technical-focused questions
         enhancedStory = `DEV_QUESTIONS_REQUEST:${currentStory}`;
       }
 
@@ -99,8 +99,8 @@ function App() {
         },
         body: JSON.stringify({
           story: enhancedStory,
-          role: selectedRole
-        })
+          role: selectedRole,
+        }),
       });
 
       if (!response.ok) {
@@ -117,17 +117,15 @@ function App() {
       setLoading(false);
     }
   };
+
   const handleRefineUserStoryWithAI = async () => {
-    // Only generate suggestions if we have a selected user story and a selected role
     if (!selectedUserStory || !selectedRole) {
       setAISuggestions([]);
       return;
     }
 
-    // Use the acceptance criteria from the selected user story
     const storyText = selectedUserStory.acceptanceCriteria || '';
 
-    // If no acceptance criteria, show error
     if (!storyText.trim()) {
       setError('No acceptance criteria found for the selected user story');
       setAISuggestions([]);
@@ -136,21 +134,17 @@ function App() {
 
     setLoading(true);
     setError('');
+
     try {
-      // Prepare the story to send - enhance for question generation based on role
       let enhancedStory = storyText;
 
       if (selectedRole === 'QA') {
-        // For QA role, add a marker that the backend can detect to generate clarification questions
         enhancedStory = `QA_QUESTIONS_REQUEST:${storyText}`;
       } else if (selectedRole === 'BA') {
-        // For BA role, add a marker to generate business-focused questions
         enhancedStory = `BA_QUESTIONS_REQUEST:${storyText}`;
       } else if (selectedRole === 'DEV') {
-        // For DEV role, add a marker to generate technical-focused questions
         enhancedStory = `DEV_QUESTIONS_REQUEST:${storyText}`;
       }
-      // For general case or no specific role enhancement, use the story as-is
 
       const response = await fetch('/api/ai', {
         method: 'POST',
@@ -159,8 +153,8 @@ function App() {
         },
         body: JSON.stringify({
           story: enhancedStory,
-          role: selectedRole
-        })
+          role: selectedRole,
+        }),
       });
 
       if (!response.ok) {
@@ -184,18 +178,24 @@ function App() {
     setAISuggestions([]);
     setError('');
     setLoading(false);
-    setSelectedRole(null); // Reset role selection when clearing story
+    setSelectedRole(null);
   };
 
-  // ADO UI Functions
+  // =========================
+  // ADO UI FUNCTIONS
+  // =========================
+
   const loadProjects = async () => {
     setAdoProjectsLoading(true);
     setAdoError('');
+
     try {
       const response = await fetch('/api/ado/projects');
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setProjects(data);
     } catch (err) {
@@ -206,7 +206,6 @@ function App() {
     }
   };
 
-  
   const loadIterations = async (projectId) => {
     if (!projectId) {
       setIterations([]);
@@ -218,11 +217,16 @@ function App() {
 
     setAdoIterationsLoading(true);
     setAdoError('');
+
     try {
-      const response = await fetch(`/api/ado/projects/${projectId}/iterations`);
+      const response = await fetch(
+        `/api/ado/projects/${projectId}/iterations`
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setIterations(data);
     } catch (err) {
@@ -242,11 +246,18 @@ function App() {
 
     setAdoUserStoriesLoading(true);
     setAdoError('');
+
     try {
-      const response = await fetch(`/api/ado/projects/${projectId}/user-stories?iterationPath=${encodeURIComponent(iterationPath)}`);
+      const response = await fetch(
+        `/api/ado/projects/${projectId}/user-stories?iterationPath=${encodeURIComponent(
+          iterationPath
+        )}`
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setUserStories(data);
     } catch (err) {
@@ -260,6 +271,7 @@ function App() {
   const handleProjectChange = (event) => {
     const projectId = event.target.value;
     const parsedProject = projectId ? JSON.parse(projectId) : null;
+
     setSelectedProject(parsedProject);
     setSelectedIteration(null);
     setUserStories([]);
@@ -270,43 +282,34 @@ function App() {
     }
   };
 
-  
   const handleIterationChange = (event) => {
     const iterationId = event.target.value;
-    const selectedIterationObj = iterationId ? JSON.parse(iterationId) : null;
+    const selectedIterationObj = iterationId
+      ? JSON.parse(iterationId)
+      : null;
+
     setSelectedIteration(selectedIterationObj);
     setUserStories([]);
     setSelectedUserStory(null);
 
-    // Load user stories using the iteration path
     if (selectedIterationObj && selectedProject) {
       loadUserStories(selectedProject.id, selectedIterationObj.path);
     }
   };
 
-  const handleUserStorySelect = (story) => {
-    setSelectedUserStory(story);
+  const handleUserStorySelect = (selectedStory) => {
+    setSelectedUserStory(selectedStory);
   };
-
-  // const handleTeamChange = (event) => {
-  //   const teamId = event.target.value;
-  //   setSelectedTeam(teamId ? JSON.parse(teamId) : null);
-  //   // Note: We are not loading sprints based on team anymore because we use iteration path
-  //   // If we want to go back to team-based sprints, we would uncomment the team loading and sprint loading
-  // };
 
   const handleToggleAdoUi = () => {
     setUseAdoUi(!useAdoUi);
-    // Reset AI suggestions and loading when toggling modes
     setAISuggestions([]);
     setLoading(false);
-    // Reset ADO state when toggling to manual (i.e., when leaving ADO mode)
+
     if (!useAdoUi) {
       setSelectedProject(null);
       setSelectedIteration(null);
       setIterations([]);
-      // setTeams([]);
-      // setAdoTeamsLoading(false);
       setUserStories([]);
       setSelectedUserStory(null);
       setAdoError('');
@@ -315,8 +318,34 @@ function App() {
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
-    // Generate AI suggestions when a role is selected
-    // generateAISuggestions();
+  };
+
+  // =========================
+  // ORIGINAL AC MODAL
+  // =========================
+
+  const handleShowACModal = (selectedStory) => {
+    const acContent = selectedStory.acceptanceCriteria || 'No acceptance criteria available';
+    // Sanitize with DOMPurify, allowing data-* and aria-* attributes
+    let cleanContent = DOMPurify.sanitize(acContent, {
+      ALLOWED_DATA_ATTR: true,
+      ALLOWED_ARIA_ATTR: true
+    });
+    // Set alt attribute for every image to 'Image unavailable' for fallback
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = cleanContent;
+    const images = tempDiv.querySelectorAll('img');
+    images.forEach(img => {
+      img.alt = 'Image unavailable';
+    });
+    cleanContent = tempDiv.innerHTML;
+    setModalContent(cleanContent);
+    setShowACModal(true);
+  };
+
+  const handleCloseACModal = () => {
+    setShowACModal(false);
+    setModalContent('');
   };
 
   return (
@@ -326,6 +355,7 @@ function App() {
           <div className="logomark">
             <div className="prism"></div>
           </div>
+
           <div className="logo-text">
             <h1 className="App-title">
               <span className="logo-part">Reve</span>
@@ -333,11 +363,14 @@ function App() {
             </h1>
           </div>
         </div>
+
         <p className="App-subtitle">
           Reveal ambiguity. Refine requirements. Build with confidence.
         </p>
       </header>
+
       <main className="container">
+
         {/* Toggle Switch */}
         <div className="toggle-switch">
           <label className="toggle-label">
@@ -348,207 +381,330 @@ function App() {
               onChange={handleToggleAdoUi}
               style={{ display: 'none' }}
             />
+
             <span
               className="toggle-slider"
               style={{ cursor: 'pointer', marginLeft: '8px' }}
             ></span>
+
             <span
               className="toggle-text"
               style={{ cursor: 'pointer' }}
             >
-              {useAdoUi ? 'Switch to Manual Entry Mode' : 'Switch to ADO User Story Mode'}
+              {useAdoUi
+                ? 'Switch to Manual Entry Mode'
+                : 'Switch to ADO User Story Mode'}
             </span>
           </label>
         </div>
 
         {useAdoUi ? (
-          // ADO User Story UI
+          /* =========================
+             ADO USER STORY UI
+             ========================= */
           <div className="ado-ui-section">
+
+            {/* Project */}
             <div className="ado-form-group">
-              <label htmlFor="project-select" className="form-label">
+              <label
+                htmlFor="project-select"
+                className="form-label"
+              >
                 Project:
               </label>
+
               <select
                 id="project-select"
                 className="project-select"
-                value={selectedProject ? JSON.stringify(selectedProject) : ''}
+                value={
+                  selectedProject
+                    ? JSON.stringify(selectedProject)
+                    : ''
+                }
                 onChange={handleProjectChange}
                 disabled={adoProjectsLoading}
               >
                 <option value="">Select Project</option>
+
                 {projects.map((project) => (
-                  <option key={project.id} value={JSON.stringify(project)}>
+                  <option
+                    key={project.id}
+                    value={JSON.stringify(project)}
+                  >
                     {project.name}
                   </option>
                 ))}
               </select>
+
               {adoProjectsLoading && (
-                <span className="loading-indicator">Loading...</span>
+                <span className="loading-indicator">
+                  Loading...
+                </span>
               )}
             </div>
 
-            {/* Team Selection - Commented out as we're using hardcoded team */}
-            {/* <div className="ado-form-group">
-              <label htmlFor="team-select" className="form-label">
-                Team:
-              </label>
-              <select
-                id="team-select"
-                className="team-select"
-                value={selectedTeam ? JSON.stringify(selectedTeam) : ''}
-                onChange={handleTeamChange}
-                disabled={!selectedProject}
-              >
-                <option value="">Select Team</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={JSON.stringify(team)}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-              {!selectedProject && (
-                <span className="placeholder-text">Select a project first</span>
-              )}
-              {adoTeamsLoading && (
-                <span className="loading-indicator">Loading...</span>
-              )}
-            </div> */}
-
+            {/* Sprint */}
             <div className="ado-form-group">
-              <label htmlFor="iteration-select" className="form-label">
+              <label
+                htmlFor="iteration-select"
+                className="form-label"
+              >
                 Sprint:
               </label>
+
               <select
                 id="iteration-select"
                 className="iteration-select"
-                value={selectedIteration ? JSON.stringify(selectedIteration) : ''}
+                value={
+                  selectedIteration
+                    ? JSON.stringify(selectedIteration)
+                    : ''
+                }
                 onChange={handleIterationChange}
-                disabled={!selectedProject || adoIterationsLoading}
+                disabled={
+                  !selectedProject || adoIterationsLoading
+                }
               >
                 <option value="">Select Sprint</option>
+
                 {iterations.map((iteration) => (
-                  <option key={iteration.id} value={JSON.stringify(iteration)}>
+                  <option
+                    key={iteration.id}
+                    value={JSON.stringify(iteration)}
+                  >
                     {iteration.name}
                   </option>
                 ))}
               </select>
+
               {!selectedProject && (
-                <span className="placeholder-text">Select a project first</span>
+                <span className="placeholder-text">
+                  Select a project first
+                </span>
               )}
+
               {adoIterationsLoading && (
-                <span className="loading-indicator">Loading...</span>
+                <span className="loading-indicator">
+                  Loading...
+                </span>
               )}
             </div>
 
+            {/* User Stories */}
             <div className="ado-user-stories-section">
-              <h2 className="section-title">User Stories</h2>
+
+              <h2 className="section-title">
+                User Stories
+              </h2>
+
               {adoUserStoriesLoading && (
                 <div className="loading-message">
                   Loading user stories...
                 </div>
               )}
+
               {adoError && (
                 <div className="error-message">
                   {adoError}
                 </div>
               )}
-              {!adoUserStoriesLoading && !adoError && userStories.length === 0 && (
-                <div className="empty-state">
-                  No user stories found for the selected sprint.
-                </div>
-              )}
-              {!adoUserStoriesLoading && !adoError && userStories.length > 0 && (
-                <div className="user-story-table-container">
-                  <table className="user-story-table">
-                    <thead>
-                      <tr>
-                        <th className="table-header-select">Select</th>
-                        <th className="table-header-id">ADO ID</th>
-                        <th className="table-header-title">ADO Title</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userStories.map((story) => (
-                        <tr
-                          key={story.id}
-                          className={`user-story-row ${selectedUserStory && selectedUserStory.id === story.id ? 'selected' : ''}`}
-                          onClick={(e) => {
-                            // Prevent checkbox double-toggle when clicking row
-                            if (e.target.type !== 'checkbox') {
-                              const checkbox = e.currentTarget.querySelector('input[type="checkbox"]');
-                              if (checkbox) {
-                                checkbox.checked = !checkbox.checked;
-                                handleUserStorySelect(checkbox.checked ? story : null);
-                              }
-                            }
-                          }}
-                        >
-                          <td className="table-cell-select">
-                            <input
-                              type="checkbox"
-                              checked={selectedUserStory && selectedUserStory.id === story.id}
-                              onChange={(e) => {
-                                e.stopPropagation(); // Prevent row click from triggering
-                                if (e.target.checked) {
-                                  handleUserStorySelect(story);
-                                } else {
-                                  handleUserStorySelect(null);
-                                }
-                              }}
-                              disabled={
-                                selectedUserStory &&
-                                selectedUserStory.id !== story.id &&
-                                selectedUserStory !== null
-                              }
-                            />
-                          </td>
-                          <td className="table-cell-id">#{story.id}</td>
-                          <td className="table-cell-title">{story.title}</td>
+
+              {!adoUserStoriesLoading &&
+                !adoError &&
+                userStories.length === 0 && (
+                  <div className="empty-state">
+                    No user stories found for the selected sprint.
+                  </div>
+                )}
+
+              {!adoUserStoriesLoading &&
+                !adoError &&
+                userStories.length > 0 && (
+                  <div className="user-story-table-container">
+
+                    <table className="user-story-table">
+
+                      <thead>
+                        <tr>
+                          <th className="table-header-select">
+                            Select
+                          </th>
+
+                          <th className="table-header-id">
+                            ADO ID
+                          </th>
+
+                          <th className="table-header-title">
+                            ADO Title
+                          </th>
+
+                          <th className="table-header-original-ac">
+                            Original AC
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+
+                      <tbody>
+
+                        {userStories.map((story) => (
+                          <tr
+                            key={story.id}
+                            className={`user-story-row ${
+                              selectedUserStory &&
+                              selectedUserStory.id === story.id
+                                ? 'selected'
+                                : ''
+                            }`}
+                            onClick={(e) => {
+
+                              if (
+                                e.target.type !== 'checkbox' &&
+                                !e.target.closest(
+                                  '.original-ac-link'
+                                )
+                              ) {
+                                const checkbox =
+                                  e.currentTarget.querySelector(
+                                    'input[type="checkbox"]'
+                                  );
+
+                                if (checkbox) {
+                                  checkbox.checked =
+                                    !checkbox.checked;
+
+                                  handleUserStorySelect(
+                                    checkbox.checked
+                                      ? story
+                                      : null
+                                  );
+                                }
+                              }
+                            }}
+                          >
+
+                            {/* Select */}
+                            <td className="table-cell-select">
+                              <input
+                                type="checkbox"
+                                checked={
+                                  selectedUserStory &&
+                                  selectedUserStory.id === story.id
+                                }
+                                onChange={(e) => {
+                                  e.stopPropagation();
+
+                                  if (e.target.checked) {
+                                    handleUserStorySelect(story);
+                                  } else {
+                                    handleUserStorySelect(null);
+                                  }
+                                }}
+                                disabled={
+                                  selectedUserStory &&
+                                  selectedUserStory.id !== story.id &&
+                                  selectedUserStory !== null
+                                }
+                              />
+                            </td>
+
+                            {/* ADO ID */}
+                            <td className="table-cell-id">
+                              #{story.id}
+                            </td>
+
+                            {/* ADO Title */}
+                            <td className="table-cell-title">
+                              {story.title}
+                            </td>
+
+                            {/* Original AC */}
+                            <td className="table-cell-original-ac">
+                              <a
+                                href="#"
+                                className="original-ac-link"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleShowACModal(story);
+                                }}
+                              >
+                                Link
+                              </a>
+                            </td>
+
+                          </tr>
+                        ))}
+
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
             </div>
 
-
-
-            {/* Role Selection Buttons */}
+            {/* Role Selection */}
             <div className="role-selection">
-              <h3 className="role-title">Select your role for tailored suggestions:</h3>
+
+              <h3 className="role-title">
+                Select your role for tailored suggestions:
+              </h3>
+
               <div className="role-buttons">
+
                 <button
                   onClick={() => handleRoleSelect('BA')}
-                  className={`role-button ba ${selectedRole === 'BA' ? 'selected' : ''}`}
+                  className={`role-button ba ${
+                    selectedRole === 'BA'
+                      ? 'selected'
+                      : ''
+                  }`}
                   disabled={loading || !selectedUserStory}
                 >
                   I'm BA
                 </button>
+
                 <button
                   onClick={() => handleRoleSelect('DEV')}
-                  className={`role-button dev ${selectedRole === 'DEV' ? 'selected' : ''}`}
+                  className={`role-button dev ${
+                    selectedRole === 'DEV'
+                      ? 'selected'
+                      : ''
+                  }`}
                   disabled={loading || !selectedUserStory}
                 >
                   I'm DEV
                 </button>
+
                 <button
                   onClick={() => handleRoleSelect('QA')}
-                  className={`role-button qa ${selectedRole === 'QA' ? 'selected' : ''}`}
+                  className={`role-button qa ${
+                    selectedRole === 'QA'
+                      ? 'selected'
+                      : ''
+                  }`}
                   disabled={loading || !selectedUserStory}
                 >
                   I'm QA
                 </button>
+
               </div>
+
               {selectedRole && (
                 <p className="role-selected">
                   Selected role: {selectedRole}
                 </p>
               )}
+
             </div>
 
-            {/* Action Buttons Container */}
-            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            {/* Action Buttons */}
+            <div
+              style={{
+                textAlign: 'center',
+                marginTop: '1.5rem',
+              }}
+            >
+
               <button
                 onClick={handleRefineUserStoryWithAI}
                 className="refine-button"
@@ -560,7 +716,9 @@ function App() {
                   adoProjectsLoading
                 }
               >
-                {adoUserStoriesLoading || adoIterationsLoading || adoProjectsLoading
+                {adoUserStoriesLoading ||
+                adoIterationsLoading ||
+                adoProjectsLoading
                   ? 'Processing...'
                   : 'Refine User Story with AI'}
               </button>
@@ -571,44 +729,62 @@ function App() {
                 disabled={loading || !selectedUserStory}
                 style={{ marginLeft: '1rem' }}
               >
-                {loading ? 'Processing...' : 'Clear Selection'}
+                {loading
+                  ? 'Processing...'
+                  : 'Clear Selection'}
               </button>
+
             </div>
 
-            {/* Error Display */}
+            {/* Error */}
             {error && (
               <div className="error-message">
                 {error}
               </div>
             )}
 
-            {/* AI Suggestions Section */}
+            {/* AI Suggestions */}
             {(aiSuggestions.length > 0 || loading) && (
               <section className="suggestions-section">
+
                 <h2 className="section-title">
                   AI Suggestions for Improvement:
                 </h2>
+
                 {loading ? (
                   <div className="loading-message">
                     Getting AI suggestions...
                   </div>
                 ) : (
                   <ul className="suggestion-list">
-                    {aiSuggestions.map((suggestion, index) => (
-                      <li key={index}>💡 {suggestion}</li>
-                    ))}
+                    {aiSuggestions.map(
+                      (suggestion, index) => (
+                        <li key={index}>
+                          💡 {suggestion}
+                        </li>
+                      )
+                    )}
                   </ul>
                 )}
+
               </section>
             )}
+
           </div>
         ) : (
-          // Existing Textbox UI
+          /* =========================
+             MANUAL ENTRY UI
+             ========================= */
           <>
             <div className="form-group">
-              <label htmlFor="story-input" className="form-label">
+
+              <label
+                htmlFor="story-input"
+                className="form-label"
+              >
                 Enter the User Story Acceptance Critieria:
               </label>
+
               <textarea
                 id="story-input"
                 className="story-input"
@@ -618,9 +794,15 @@ function App() {
                 onChange={handleStoryChange}
                 aria-describedby="story-help"
               />
-              <p id="story-help" className="form-help-text">
-                Avoid vague words like: fast, should, easy, simple, etc., quickly
+
+              <p
+                id="story-help"
+                className="form-help-text"
+              >
+                Avoid vague words like: fast, should, easy,
+                simple, etc., quickly
               </p>
+
             </div>
 
             {error && (
@@ -631,64 +813,79 @@ function App() {
 
             {clarifyingQuestions.length > 0 ? (
               <>
-                {/*
-                <section className="questions-section">
-                  <h2 className="section-title">
-                    Clarifying Questions:
-                  </h2>
-                  <ul className="question-list">
-                    {clarifyingQuestions.map((question, index) => (
-                      <li key={index}>{question}</li>
-                    ))}
-                  </ul>
-                </section>
-                */}
-
-                {/* Role Selection Buttons */}
+                {/* Role Selection */}
                 <div className="role-selection">
-                  <h3 className="role-title">Select your role for tailored suggestions:</h3>
+
+                  <h3 className="role-title">
+                    Select your role for tailored suggestions:
+                  </h3>
+
                   <div className="role-buttons">
+
                     <button
                       onClick={() => handleRoleSelect('BA')}
-                      className={`role-button ba ${selectedRole === 'BA' ? 'selected' : ''}`}
+                      className={`role-button ba ${
+                        selectedRole === 'BA'
+                          ? 'selected'
+                          : ''
+                      }`}
                       disabled={loading}
                     >
                       I'm BA
                     </button>
+
                     <button
                       onClick={() => handleRoleSelect('DEV')}
-                      className={`role-button dev ${selectedRole === 'DEV' ? 'selected' : ''}`}
+                      className={`role-button dev ${
+                        selectedRole === 'DEV'
+                          ? 'selected'
+                          : ''
+                      }`}
                       disabled={loading}
                     >
                       I'm DEV
                     </button>
+
                     <button
                       onClick={() => handleRoleSelect('QA')}
-                      className={`role-button qa ${selectedRole === 'QA' ? 'selected' : ''}`}
+                      className={`role-button qa ${
+                        selectedRole === 'QA'
+                          ? 'selected'
+                          : ''
+                      }`}
                       disabled={loading}
                     >
                       I'm QA
                     </button>
+
                   </div>
+
                   {selectedRole && (
                     <p className="role-selected">
                       Selected role: {selectedRole}
                     </p>
                   )}
+
                 </div>
 
-                {/* Action Buttons Container */}
-                <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-                  {/* Refine with AI Button */}
+                {/* Action Buttons */}
+                <div
+                  style={{
+                    textAlign: 'center',
+                    marginTop: '1.5rem',
+                  }}
+                >
+
                   <button
                     onClick={generateAISuggestions}
                     className="refine-button"
                     disabled={!selectedRole || loading}
                   >
-                    {loading ? 'Getting AI suggestions...' : 'Refine user story with AI'}
+                    {loading
+                      ? 'Getting AI suggestions...'
+                      : 'Refine user story with AI'}
                   </button>
 
-                  {/* Clear Story Button */}
                   <button
                     onClick={handleClearStory}
                     className="clear-button"
@@ -697,24 +894,32 @@ function App() {
                   >
                     Clear Story
                   </button>
+
                 </div>
 
                 {(aiSuggestions.length > 0 || loading) && (
                   <section className="suggestions-section">
+
                     <h2 className="section-title">
                       AI Suggestions for Improvement:
                     </h2>
+
                     {loading ? (
                       <div className="loading-message">
                         Getting AI suggestions...
                       </div>
                     ) : (
                       <ul className="suggestion-list">
-                        {aiSuggestions.map((suggestion, index) => (
-                          <li key={index}>💡 {suggestion}</li>
-                        ))}
+                        {aiSuggestions.map(
+                          (suggestion, index) => (
+                            <li key={index}>
+                              💡 {suggestion}
+                            </li>
+                          )
+                        )}
                       </ul>
                     )}
+
                   </section>
                 )}
               </>
@@ -725,11 +930,19 @@ function App() {
                     Great! No vague words detected in your story.
                   </div>
                 )}
-                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+
+                <div
+                  style={{
+                    textAlign: 'center',
+                    marginTop: '2rem',
+                  }}
+                >
                   <button
                     onClick={handleClearStory}
                     className="clear-button"
-                    disabled={story.trim() === '' || loading}
+                    disabled={
+                      story.trim() === '' || loading
+                    }
                   >
                     Clear Story
                   </button>
@@ -738,7 +951,64 @@ function App() {
             )}
           </>
         )}
+
       </main>
+
+      {/* =========================
+          ACCEPTANCE CRITERIA MODAL
+          ========================= */}
+
+      {showACModal && (
+        <div
+          className="ac-modal-backdrop"
+          onClick={handleCloseACModal}
+        >
+
+          <div
+            className="ac-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            <div className="ac-modal-header">
+
+              <div className="ac-modal-title">
+                Acceptance Criteria
+              </div>
+
+              <button
+                className="ac-modal-close-button"
+                onClick={handleCloseACModal}
+              >
+                ×
+              </button>
+
+            </div>
+
+            <div className="ac-modal-body">
+
+              <div
+                className="ac-modal-text"
+                dangerouslySetInnerHTML={{
+                  __html: modalContent,
+                }}
+              />
+
+            </div>
+
+            <div className="ac-modal-footer">
+              <button
+                className="ac-modal-close-button-bottom"
+                onClick={handleCloseACModal}
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
     </div>
   );
 }

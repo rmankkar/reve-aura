@@ -76,7 +76,7 @@ html, body, #root {
 body {
   font-family: var(--font-family);
   background-color: var(--background-color);
-  background-image: url("/Users/rishi.mankkar/Downloads/futuristic-background-design/3607424.jpg");
+  /* background-image: url("/Users/rishi.mankkar/Downloads/futuristic-background-design/3607424.jpg"); */
   background-size: auto;
   background-repeat: repeat;
   color: var(--text-primary);
@@ -972,9 +972,16 @@ body {
   width: 100px; /* For the ID column */
 }
 
+/* Adjusted title column width to accommodate the new Original AC column */
 .user-story-table th:nth-child(3),
 .user-story-table td:nth-child(3) {
-  width: calc(100% - 160px); /* For the title column - remaining space */
+  width: calc(100% - 240px); /* 60 (select) + 100 (ID) + 80 (Original AC) = 240px */
+}
+
+/* New Original AC column width */
+.user-story-table th:nth-child(4),
+.user-story-table td:nth-child(4) {
+  width: 80px; /* For the Original AC column */
 }
 
 .user-story-row {
@@ -1338,4 +1345,253 @@ body {
   .App-title .logo-part.aura {
     margin-left: 0;
   }
+}
+
+/* Acceptance Criteria Modal Styles */
+.ac-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.ac-modal-content {
+  background-color: var(--surface-color);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  cursor: default;
+  border: 1px solid var(--border-color);
+}
+
+.ac-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ac-modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ac-modal-title::before {
+  content: "📋";
+  font-size: 1.5rem;
+}
+
+.ac-modal-close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.ac-modal-close-button:hover {
+  background-color: var(--surface-light);
+  color: var(--text-primary);
+}
+
+.ac-modal-body {
+  padding: 1.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.ac-modal-loading,
+.ac-modal-error,
+.ac-modal-empty {
+  padding: 1rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.ac-modal-loading {
+  color: var(--text-secondary);
+}
+
+.ac-modal-error {
+  background-color: rgba(255, 71, 87, 0.1);
+  border: 1px solid var(--error-color);
+  color: var(--error-light);
+  border-radius: var(--border-radius);
+}
+
+.ac-modal-empty {
+  color: var(--text-muted);
+}
+
+.ac-modal-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ac-modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.ac-modal-close-button-full {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background: var(--gradient-error);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.ac-modal-close-button-full:hover {
+  background: var(--gradient-error);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 10px 20px rgba(255, 71, 87, 0.4),
+    var(--shadow);
+}
+
+/* AC Link Styles */
+.table-cell-ac {
+  width: 120px;
+  text-align: center;
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.ac-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: var(--transition);
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius);
+  padding: 0.375rem 0.75rem;
+  background-color: rgba(57, 255, 20, 0.1);
+}
+
+.ac-link:hover {
+  color: white;
+  background-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+}
+
+.ac-link:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 768px) {
+  .ac-modal-content {
+    width: 95%;
+    max-height: 75vh;
+  }
+
+  .ac-modal-header {
+    padding: 1rem;
+  }
+
+  .ac-modal-title {
+    font-size: 1.125rem;
+  }
+
+  .ac-modal-body {
+    padding: 1rem;
+    max-height: 300px;
+  }
+
+  .ac-modal-footer {
+    padding: 1rem;
+  }
+
+  .ac-link {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ac-modal-content {
+    width: 90%;
+    margin: 0.5rem;
+  }
+
+  .ac-modal-header {
+    padding: 0.75rem;
+  }
+
+  .ac-modal-title {
+    font-size: 1rem;
+  }
+
+  .ac-modal-body {
+    padding: 0.75rem;
+    max-height: 250px;
+  }
+
+  .ac-modal-footer {
+    padding: 0.75rem;
+  }
+
+  .ac-link {
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+/* Original AC Link Styles */
+.original-ac-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.original-ac-link:hover {
+  text-decoration: underline;
 }
