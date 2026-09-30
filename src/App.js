@@ -323,15 +323,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <div className="logo-container">
-          <div className="logomark">
-            <div className="prism"></div>
-          </div>
-          <div className="logo-text">
-            <h1 className="App-title">
-              <span className="logo-part">Reve</span>
-              <span className="logo-part aura">Aura</span>
-            </h1>
-          </div>
+          <div className="logomark"></div>
         </div>
         <p className="App-subtitle">
           Reveal ambiguity. Refine requirements. Build with confidence.
