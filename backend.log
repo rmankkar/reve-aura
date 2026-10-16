@@ -1,0 +1,139 @@
+Dotenv loaded. Checking key env vars:
+JIRA_BASE_URL: SET
+JIRA_EMAIL: SET
+JIRA_API_TOKEN: SET
+ADO_ORG_URL: SET
+ADO_PAT: SET
+SYSTEM_TYPE: JIRA
+NVIDIA_API_KEY: SET
+SYSTEM_TYPE from env (after processing): JIRA
+Server is running on port 5001
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 1 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 1 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 1 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 1 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/project/search
+JQL: {"jql":"project = REVEAURA AND sprint = 2 AND issuetype = Story ORDER BY Rank","fields":["summary","description","acceptancecriteria"]}
+JIRA REQUEST URL: https://testingspace1991.atlassian.net/rest/api/3/search
+JIRA API Error: {
+  status: 410,
+  statusText: 'Gone',
+  body: '{"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}'
+}
+Error fetching JIRA user stories: Error: JIRA API error: 410 - {"errorMessages":["The requested API has been removed. Please migrate to the /rest/api/3/search/jql API. A full migration guideline is available at https://developer.atlassian.com/changelog/#CHANGE-2046"],"errors":{}}
+    at jiraRequest (/Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:116:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async /Users/rishi.mankkar/Documents/GitHub_Projects/reve-aura/server/server.js:327:22

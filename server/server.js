@@ -1,8 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const { OpenAI } = require('openai');
+const path = require('path');
 //const fetch = require('node-fetch');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+
+console.log('Dotenv loaded. Checking key env vars:');
+console.log('JIRA_BASE_URL:', process.env.JIRA_BASE_URL ? 'SET' : 'NOT SET');
+console.log('JIRA_EMAIL:', process.env.JIRA_EMAIL ? 'SET' : 'NOT SET');
+console.log('JIRA_API_TOKEN:', process.env.JIRA_API_TOKEN ? 'SET' : 'NOT SET');
+console.log('ADO_ORG_URL:', process.env.ADO_ORG_URL ? 'SET' : 'NOT SET');
+console.log('ADO_PAT:', process.env.ADO_PAT ? 'SET' : 'NOT SET');
+console.log('SYSTEM_TYPE:', process.env.SYSTEM_TYPE);
+console.log('NVIDIA_API_KEY:', process.env.NVIDIA_API_KEY ? 'SET' : 'NOT SET');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -25,6 +35,15 @@ app.get('/api/health', (req, res) => {
 // ADO Configuration - these should be set as environment variables in production
 const ADO_ORG_URL = process.env.ADO_ORG_URL;
 const ADO_PAT = process.env.ADO_PAT;
+
+// JIRA Configuration
+const JIRA_BASE_URL = process.env.JIRA_BASE_URL;
+const JIRA_EMAIL = process.env.JIRA_EMAIL;
+const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN;
+
+// System Type (ADO or JIRA)
+const SYSTEM_TYPE = process.env.SYSTEM_TYPE || 'ADO';
+console.log('SYSTEM_TYPE from env (after processing):', SYSTEM_TYPE);
 
 // Helper function to make ADO API requests
 const adoRequest = async (endpoint, options = {}) => {
@@ -60,6 +79,55 @@ const adoRequest = async (endpoint, options = {}) => {
 
   return response.json();
 };
+
+// Helper function to make JIRA API requests
+const jiraRequest = async (endpoint, options = {}) => {
+  if (!JIRA_BASE_URL || !JIRA_EMAIL || !JIRA_API_TOKEN) {
+    throw new Error('JIRA configuration is missing');
+  }
+
+  const authHeader = Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString('base64');
+
+  // Ensure endpoint doesn't start with / if JIRA_BASE_URL already ends with /
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+  const url = `${JIRA_BASE_URL}/rest/api/3/${cleanEndpoint}`;
+
+  console.log('JIRA REQUEST URL:', url);
+
+  const response = await fetch(url, {
+    method: options.method || 'GET',
+    headers: {
+      'Authorization': `Basic ${authHeader}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+    body: options.body,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+
+    console.error('JIRA API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorBody
+    });
+
+    throw new Error(
+      `JIRA API error: ${response.status} - ${errorBody}`
+    );
+  }
+
+  return response.json();
+};
+
+// Config endpoint to get system type and default project
+app.get('/api/config', (req, res) => {
+  res.json({
+    systemType: SYSTEM_TYPE,
+    defaultProjectKey: process.env.JIRA_DEFAULT_PROJECT
+  });
+});
 
 // ADO API Endpoints
 app.get('/api/ado/projects', async (req, res) => {
@@ -154,7 +222,7 @@ app.get('/api/ado/projects/:projectId/user-stories', async (req, res) => {
 
     console.log('WIQL:', JSON.stringify(wiqlQuery));
     console.log('Iteration Path:', wiqlIterationPath);
-    
+
     const wiqlResponse = await adoRequest(`${projectId}/_apis/wit/wiql?api-version=7.1`, {
       method: 'POST',
       body: JSON.stringify(wiqlQuery)
@@ -182,6 +250,107 @@ app.get('/api/ado/projects/:projectId/user-stories', async (req, res) => {
   } catch (error) {
     console.error('Error fetching ADO user stories:', error);
     res.status(500).json({ error: 'Failed to fetch user stories from Azure DevOps' });
+  }
+});
+
+// JIRA API Endpoints
+app.get('/api/jira/projects', async (req, res) => {
+  try {
+    const response = await jiraRequest('project/search');
+    // Transform to expected format: array of { id, name }
+    const projects = response.values.map(project => ({
+      id: project.id,
+      name: project.name,
+      key: project.key
+    }));
+    res.json(projects);
+  } catch (error) {
+    console.error('Error fetching JIRA projects:', error);
+    res.status(500).json({ error: 'Failed to fetch projects from JIRA' });
+  }
+});
+
+// Get iterations (sprints) for a project
+app.get('/api/jira/projects/:projectIdOrKey/iterations', async (req, res) => {
+  try {
+    const _projectIdOrKey = req.params.projectIdOrKey;
+    const authHeader = Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString('base64');
+
+    // Using board ID 1 as per requirement
+    const sprintsResponse = await fetch(`${JIRA_BASE_URL}/rest/agile/1.0/board/1/sprint`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!sprintsResponse.ok) {
+      const errorBody = await sprintsResponse.text();
+      throw new Error(`JIRA API error: ${sprintsResponse.status} - ${errorBody}`);
+    }
+
+    const sprintsData = await sprintsResponse.json();
+    // Transform to expected format
+    const sprints = sprintsData.values.map(sprint => ({
+      id: sprint.id,
+      name: sprint.name,
+      // JIRA doesn't use path like ADO, but we can create a similar structure
+      state: sprint.state || 'active'
+    }));
+
+    res.json(sprints);
+  } catch (error) {
+    console.error('Error fetching JIRA iterations:', error);
+    res.status(500).json({ error: 'Failed to fetch iterations from JIRA' });
+  }
+});
+
+// Get user stories for a project and sprint
+app.get('/api/jira/projects/:projectIdOrKey/user-stories', async (req, res) => {
+  try {
+    const projectIdOrKey = req.params.projectIdOrKey;
+    const sprintId = req.query.sprintId;
+
+    if (!sprintId) {
+      return res.status(400).json({ error: 'Sprint ID is required' });
+    }
+
+    // Using agile endpoint to get issues in sprint, filtered by issue type = Story and project
+    const authHeader = Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString('base64');
+    const url = `${JIRA_BASE_URL}/rest/agile/1.0/sprint/${sprintId}/issue?jql=issuetype%3D%27Story%27`;
+
+    console.log('JIRA USER STORIES REQUEST URL:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('JIRA USER STORIES ERROR:', { status: response.status, body: errorBody });
+      throw new Error(`JIRA API error: ${response.status} - ${errorBody}`);
+    }
+
+    const data = await response.json();
+    // The agile endpoint returns { issues: [ ... ] }
+    // Transform to expected format: array of { id, title, description, acceptanceCriteria }
+    const userStories = data.issues.map(issue => ({
+      id: issue.id,
+      title: issue.fields.summary,
+      description: issue.fields.description || '',
+      acceptanceCriteria: issue.fields.acceptancecriteria || ''
+    }));
+
+    console.log('Fetched User Stories:', userStories);
+    res.json(userStories);
+  } catch (error) {
+    console.error('Error fetching JIRA user stories:', error);
+    res.status(500).json({ error: 'Failed to fetch user stories from JIRA' });
   }
 });
 
