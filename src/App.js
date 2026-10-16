@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import DOMPurify from 'dompurify';
 
 function App() {
   const [story, setStory] = useState('');
@@ -76,32 +77,33 @@ function App() {
   const handleStoryChange = (event) => {
     const newStory = event.target.value;
     setStory(newStory);
-    setError(''); // Clear error on new input
-    analyzeStory(newStory); // Generate clarifying questions based on vague words
+    setError('');
+    analyzeStory(newStory);
   };
 
   const analyzeStory = (storyText) => {
-    const foundWords = vagueWords.filter(word =>
-      storyText.toLowerCase().includes(` ${word} `) ||
-      storyText.toLowerCase().startsWith(`${word} `) ||
-      storyText.toLowerCase().endsWith(` ${word}`) ||
-      storyText.toLowerCase() === word
+    const foundWords = vagueWords.filter(
+      (word) =>
+        storyText.toLowerCase().includes(` ${word} `) ||
+        storyText.toLowerCase().startsWith(`${word} `) ||
+        storyText.toLowerCase().endsWith(` ${word}`) ||
+        storyText.toLowerCase() === word
     );
 
     if (foundWords.length > 0) {
       setClarifyingQuestions(
-        foundWords.map(word =>
-          `Could you please provide more details about how "${word}" relates to the task?`
+        foundWords.map(
+          (word) =>
+            `Could you please provide more details about how "${word}" relates to the task?`
         )
       );
     } else {
       setClarifyingQuestions([]);
-      setAISuggestions([]); // Clear AI suggestions when no vague words
+      setAISuggestions([]);
     }
   };
 
   const generateAISuggestions = async () => {
-    // Determine which story to use based on current mode
     let currentStory = '';
     if (uiMode === 'system') {
       if (systemType === 'ADO' && selectedAdoUserStory) {
@@ -112,7 +114,6 @@ function App() {
         currentStory = selectedJiraUserStory.description || '';
       }
     } else {
-      // In manual mode, use the manual story
       currentStory = story;
     }
 
@@ -124,18 +125,15 @@ function App() {
 
     setLoading(true);
     setError('');
+
     try {
-      // Prepare the story to send - enhance for question generation based on role
       let enhancedStory = currentStory;
 
       if (selectedRole === 'QA') {
-        // For QA role, add a marker that the backend can detect to generate clarification questions
         enhancedStory = `QA_QUESTIONS_REQUEST:${currentStory}`;
       } else if (selectedRole === 'BA') {
-        // For BA role, add a marker to generate business-focused questions
         enhancedStory = `BA_QUESTIONS_REQUEST:${currentStory}`;
       } else if (selectedRole === 'DEV') {
-        // For DEV role, add a marker to generate technical-focused questions
         enhancedStory = `DEV_QUESTIONS_REQUEST:${currentStory}`;
       }
 
@@ -146,8 +144,8 @@ function App() {
         },
         body: JSON.stringify({
           story: enhancedStory,
-          role: selectedRole
-        })
+          role: selectedRole,
+        }),
       });
 
       if (!response.ok) {
@@ -187,6 +185,7 @@ function App() {
 
     setLoading(true);
     setError('');
+
     try {
       // Prepare the story to send - enhance for question generation based on role
       let enhancedStory = currentStory;
@@ -209,8 +208,8 @@ function App() {
         },
         body: JSON.stringify({
           story: enhancedStory,
-          role: selectedRole
-        })
+          role: selectedRole,
+        }),
       });
 
       if (!response.ok) {
@@ -262,11 +261,14 @@ function App() {
   const loadAdoProjects = async () => {
     setAdoProjectsLoading(true);
     setAdoError('');
+
     try {
       const response = await fetch('/api/ado/projects');
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setAdoProjects(data);
     } catch (err) {
@@ -288,11 +290,16 @@ function App() {
 
     setAdoIterationsLoading(true);
     setAdoError('');
+
     try {
-      const response = await fetch(`/api/ado/projects/${projectId}/iterations`);
+      const response = await fetch(
+        `/api/ado/projects/${projectId}/iterations`
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setAdoIterations(data);
     } catch (err) {
@@ -312,11 +319,18 @@ function App() {
 
     setAdoUserStoriesLoading(true);
     setAdoError('');
+
     try {
-      const response = await fetch(`/api/ado/projects/${projectId}/user-stories?iterationPath=${encodeURIComponent(iterationPath)}`);
+      const response = await fetch(
+        `/api/ado/projects/${projectId}/user-stories?iterationPath=${encodeURIComponent(
+          iterationPath
+        )}`
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       setAdoUserStories(data);
     } catch (err) {
@@ -553,11 +567,14 @@ function App() {
         <div className="logo-container">
           <div className="logomark"></div>
         </div>
+
         <p className="App-subtitle">
           Reveal ambiguity. Refine requirements. Build with confidence.
         </p>
       </header>
+
       <main className="container">
+
         {/* Toggle Switch */}
         <div className="toggle-switch">
           <label className="toggle-label">
@@ -568,10 +585,12 @@ function App() {
               onChange={handleToggleAdoUi}
               style={{ display: 'none' }}
             />
+
             <span
               className="toggle-slider"
               style={{ cursor: 'pointer', marginLeft: '8px' }}
             ></span>
+
             <span
               className="toggle-text"
               style={{ cursor: 'pointer' }}
@@ -768,6 +787,7 @@ function App() {
                 >
                   {loading ? 'Processing...' : 'Clear Selection'}
                 </button>
+
               </div>
 
               {/* Error Display */}
@@ -777,23 +797,30 @@ function App() {
               </div>
             )}
 
-            {/* AI Suggestions Section */}
+            {/* AI Suggestions */}
             {(aiSuggestions.length > 0 || loading) && (
               <section className="suggestions-section">
+
                 <h2 className="section-title">
                   AI Suggestions for Improvement:
                 </h2>
+
                 {loading ? (
                   <div className="loading-message">
                     Getting AI suggestions...
                   </div>
                 ) : (
                   <ul className="suggestion-list">
-                    {aiSuggestions.map((suggestion, index) => (
-                      <li key={index}>💡 {suggestion}</li>
-                    ))}
+                    {aiSuggestions.map(
+                      (suggestion, index) => (
+                        <li key={index}>
+                          💡 {suggestion}
+                        </li>
+                      )
+                    )}
                   </ul>
                 )}
+
               </section>
             )}
             </div>
@@ -1128,6 +1155,7 @@ function App() {
                     >
                       Clear Story
                     </button>
+
                   </div>
                 </>
               )}
